@@ -1,24 +1,60 @@
 {% extends "layouts/base.html" %}
 
-{% block title %} Body control {% endblock %} 
+{% block title %} Bodycontrol {% endblock %} 
 
 <!-- Specific Page CSS goes HERE  -->
-{% block stylesheets %}{% endblock stylesheets %}
+{% block stylesheets %}
+<style>
+  /* Asegurar que el contenedor tenga un espacio adecuado */
+  .content {
+    margin-top: 50px; /* Ajustar para bajar las cámaras más abajo */
+  }
+  
+  /* Estilo para los recuadros de las cámaras */
+  .camera-box {
+    width: 100%;
+    max-width: 640px;
+    height: 480px;
+    border: 2px solid #333;
+    background-color: #f0f0f0;
+    text-align: center;
+    margin-bottom: 20px;
+  }
+  
+  .camera-title {
+    margin-bottom: 10px;
+    font-weight: bold;
+  }
+
+  /* Alinear el contenido al centro */
+  .camera-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+  }
+</style>
+{% endblock stylesheets %}
 
 {% block content %}
-
-  <div class="content">
-    <h1>Cam 0 (Integrada)</h1>
-    <img src="{{ url_for('video_feed_0') }}" width="640" height="480" />
-
-    <h1>Cam 1 (USB)</h1>
-    <img src="{{ url_for('video_feed_1') }}" width="640" height="480" />
-
+  <div class="container">
+    <div class="row">
+      <p class="text-center">Maps es el body control</p>
+    </div>
+    <div class="row camera-container">
+      <!-- Cam 1 -->
+      <div class="camera-box">
+        <div class="camera-title">Cam 0 (Integrada) | Ejes X y Y</div>
+        <img src="{{ url_for('video_feed_1') }}" class="img-fluid" alt="Cam 1 feed not available">
+      </div>
+      <!-- Cam 0 -->
+      <div class="camera-box">
+        <div class="camera-title">Cam 1 (USB) | Eje Z</div>
+        <img src="{{ url_for('video_feed_0') }}" class="img-fluid" alt="Cam 0 feed not available">
+      </div>
+    </div>
   </div>
-
 {% endblock content %}
 
 <!-- Specific Page JS goes HERE  -->
-{% block javascripts %}
-
-{% endblock javascripts %}
+{% block javascripts %}{% endblock javascripts %}
