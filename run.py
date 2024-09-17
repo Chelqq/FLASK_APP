@@ -37,12 +37,12 @@ if DEBUG:
 
 @app.route('/video_feed_0')
 def video_feed_0():
-    return Response(gen_video_feed(0),
+    return Response(gen_video_feed(1), # si, asi aparecen en orden
                     mimetype='multipart/x-mixed-replace; boundary=frame')
 
 @app.route('/video_feed_1')
 def video_feed_1():
-    return Response(gen_video_feed(1),
+    return Response(gen_video_feed(0), # si, asi aparecen en orden
                     mimetype='multipart/x-mixed-replace; boundary=frame')
 
 if __name__ == "__main__":

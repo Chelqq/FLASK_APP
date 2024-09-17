@@ -6,6 +6,7 @@ mp_pose = mp.solutions.pose
 mp_drawing = mp.solutions.drawing_utils
 
 def process_frame(frame, pose):
+    frame = cv2.flip(frame, 1)
     """Procesa cada frame usando MediaPipe para la estimación de pose."""
     # Convertir la imagen de BGR a RGB para MediaPipe
     rgb_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
