@@ -1,6 +1,6 @@
 # -*- encoding: utf-8 -*-
 
-from flask import render_template, redirect, request, url_for
+from flask import render_template, redirect, request, url_for, jsonify
 from flask_login import (
     current_user,
     login_user,
@@ -13,7 +13,6 @@ from apps import db, login_manager
 from apps.authentication import blueprint
 from apps.authentication.forms import LoginForm, CreateAccountForm
 from apps.authentication.models import Users
-
 from apps.authentication.util import verify_pass
 
 
@@ -106,7 +105,6 @@ def register():
 def logout():
     logout_user()
     return redirect(url_for('authentication_blueprint.login'))
-
 
 # Errors
 
