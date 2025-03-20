@@ -41,10 +41,12 @@ def create_app(config):
     
     register_blueprints(app)
     configure_database(app)
+    try:
+        from apps.arduino.controller import init_arduino
+        init_arduino(port=app.config.get('ARDUINO_PORT', 'COM12'))
+    except Exception as e:
+        app.logger.error(f"Error initializing Arduino controller: {str(e)}")
     
-    # Inicializar el controlador de Arduino
-    from apps.arduino.controller import init_arduino
-    init_arduino(port=app.config.get('ARDUINO_PORT', 'COM12'))
     
     return app
 

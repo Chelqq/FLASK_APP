@@ -3,13 +3,17 @@
 from apps.arduino import blueprint
 from flask import request, jsonify
 from flask_login import login_required
-from apps.arduino.controller import arduino_controller
+from apps.arduino.controller import arduino_controller, init_arduino
 
 @blueprint.route('/status')
 @login_required
 def status():
     """Devuelve el estado de la conexión con Arduino"""
-    if arduino_controller.is_connected():
+    # Ensure controller is initialized
+    if arduino_controller is None:
+        init_arduino()
+        
+    if arduino_controller and arduino_controller.is_connected():
         return jsonify({
             'status': 'connected',
             'port': arduino_controller.port
@@ -23,17 +27,31 @@ def status():
 @login_required
 def connect():
     """Intenta conectar con Arduino"""
+    # Ensure controller is initialized
+    if arduino_controller is None:
+        init_arduino()
+        
     data = request.json or {}
-    port = data.get('port', arduino_controller.port)
-    baud_rate = data.get('baud_rate', arduino_controller.baud_rate)
     
-    # Actualizar configuración si es necesario
-    if port != arduino_controller.port:
-        arduino_controller.port = port
-    if baud_rate != arduino_controller.baud_rate:
-        arduino_controller.baud_rate = baud_rate
+    if arduino_controller is None:
+        # If still None after init attempt, use defaults
+        port = data.get('port', 'COM12')
+        baud_rate = data.get('baud_rate', 9600)
+        # Try to initialize with the given port
+        init_arduino(port=port, baud_rate=baud_rate)
+    else:
+        # Normal case - controller exists
+        port = data.get('port', arduino_controller.port)
+        baud_rate = data.get('baud_rate', arduino_controller.baud_rate)
+        
+        # Update settings if needed
+        if port != arduino_controller.port:
+            arduino_controller.port = port
+        if baud_rate != arduino_controller.baud_rate:
+            arduino_controller.baud_rate = baud_rate
     
-    success = arduino_controller.connect()
+    # Try to connect
+    success = arduino_controller.connect() if arduino_controller else False
     
     if success:
         return jsonify({
@@ -51,6 +69,17 @@ def connect():
 def set_servo():
     """Controla un servo específico"""
     try:
+        # Ensure controller is initialized
+        if arduino_controller is None:
+            init_arduino()
+            
+        # If still None, return error
+        if arduino_controller is None:
+            return jsonify({
+                'status': 'error',
+                'message': 'Arduino controller not initialized'
+            }), 500
+            
         # Obtener los datos del JSON
         data = request.json
         servo_id = int(data['servo_id'])
@@ -86,6 +115,17 @@ def set_servo():
 @login_required
 def reset_servos():
     """Resetea todos los servos a posición central"""
+    # Ensure controller is initialized
+    if arduino_controller is None:
+        init_arduino()
+        
+    # If still None, return error
+    if arduino_controller is None:
+        return jsonify({
+            'status': 'error',
+            'message': 'Arduino controller not initialized'
+        }), 500
+        
     success, messages = arduino_controller.reset_servos()
     
     if success:
