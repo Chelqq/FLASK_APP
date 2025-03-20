@@ -41,4 +41,14 @@ def create_app(config):
     
     register_blueprints(app)
     configure_database(app)
+    
+    # Inicializar el controlador de Arduino
+    from apps.arduino.controller import init_arduino
+    init_arduino(port=app.config.get('ARDUINO_PORT', 'COM12'))
+    
     return app
+
+def register_blueprints(app):
+    for module_name in ('authentication', 'home', 'arduino'):  # Añadir 'arduino'
+        module = import_module('apps.{}.routes'.format(module_name))
+        app.register_blueprint(module.blueprint)

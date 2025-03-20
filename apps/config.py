@@ -24,6 +24,9 @@ class Config(object):
     # Enable/Disable Github Social Login    
     if GITHUB_ID and GITHUB_SECRET:
          SOCIAL_AUTH_GITHUB  = True
+    
+    ARDUINO_PORT = os.getenv('ARDUINO_PORT', 'COM12')
+    ARDUINO_BAUD_RATE = int(os.getenv('ARDUINO_BAUD_RATE', '9600'))
 
 class ProductionConfig(Config):
     DEBUG = False
