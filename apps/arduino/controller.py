@@ -79,6 +79,7 @@ class ArduinoController:
                 self.arduino = None
                 self.connected = False
                 logger.error(f"⚠️ Error de conexión en intento {attempt+1}: {str(e)}")
+                print(f"⚠️ Error de conexión en intento {attempt+1}: {str(e)}")
                 time.sleep(delay)  # Wait before retry
                 
         logger.error(f"⚠️ No se pudo conectar con Arduino después de {retries} intentos")
@@ -188,8 +189,7 @@ class ArduinoController:
 
 # Singleton para usar en toda la aplicación
 arduino_controller = None
-
-def init_arduino(port=None, baud_rate=9600):
+def init_arduino(port="COM12", baud_rate=9600):
     """Inicializa el controlador de Arduino como singleton"""
     global arduino_controller
     try:
@@ -197,8 +197,10 @@ def init_arduino(port=None, baud_rate=9600):
             logger.info(f"Inicializando ArduinoController con port={port}, baud_rate={baud_rate}")
             arduino_controller = ArduinoController(port, baud_rate)
             
-            # Don't try to connect immediately, let the routes handle that
-            logger.info("ArduinoController inicializado correctamente")
+            # Try to connect immediately once during initialization
+            if port:
+                connect_result = arduino_controller.connect()
+                logger.info(f"Resultado de conexión inicial: {'Éxito' if connect_result else 'Falló'}")
             
         return arduino_controller
     except Exception as e:

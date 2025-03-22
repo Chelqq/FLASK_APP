@@ -41,12 +41,14 @@ def create_app(config):
     
     register_blueprints(app)
     configure_database(app)
+    
+    # Move Arduino initialization here, after all blueprints are registered
     try:
         from apps.arduino.controller import init_arduino
-        init_arduino(port=app.config.get('ARDUINO_PORT', 'COM12'))
+        controller = init_arduino(port=app.config.get('ARDUINO_PORT', 'COM12'))
+        app.logger.info(f"Arduino controller initialized: {controller is not None}")
     except Exception as e:
         app.logger.error(f"Error initializing Arduino controller: {str(e)}")
-    
     
     return app
 

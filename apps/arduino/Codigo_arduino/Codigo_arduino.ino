@@ -5,6 +5,7 @@ int servo_pins[30] = {2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 22, 23, 24, 25, 26
 
 void setup() {
     Serial.begin(9600);  // Inicializar comunicación serial
+    delay(2000);  // Esperar 2 segundos para inicializar correctamente
 
     // Asociar los pines con los servos
     for (int i = 0; i < 30; i++) {
