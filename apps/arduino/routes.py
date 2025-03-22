@@ -4,6 +4,8 @@ from apps.arduino import blueprint
 from flask import request, jsonify
 from flask_login import login_required
 from apps.arduino.controller import arduino_controller, init_arduino
+import serial
+import serial.tools.list_ports
 
 @blueprint.route('/status')
 @login_required
@@ -139,3 +141,85 @@ def reset_servos():
             'message': 'Error al resetear algunos servos',
             'details': messages
         }), 500
+        
+        
+        import serial.tools.list_ports
+
+@blueprint.route('/diagnostico')
+@login_required
+def diagnostico():
+    """Diagnóstico de puertos y conexión Arduino"""
+    try:
+        # Importar módulo serial si no está importado
+        import serial
+        import serial.tools.list_ports
+        
+        # Buscar puertos disponibles
+        puertos = []
+        for p in serial.tools.list_ports.comports():
+            puertos.append({
+                'dispositivo': p.device,
+                'descripcion': p.description,
+                'hwid': p.hwid
+            })
+        
+        # Verificar configuración actual
+        config_actual = {
+            'puerto_configurado': arduino_controller.port if arduino_controller else 'No inicializado',
+            'baud_rate': arduino_controller.baud_rate if arduino_controller else 'No inicializado',
+            'estado_conexion': 'Conectado' if (arduino_controller and arduino_controller.is_connected()) else 'Desconectado'
+        }
+        
+        # Intentar información adicional
+        info_adicional = {}
+        if arduino_controller and arduino_controller.arduino:
+            try:
+                info_adicional['arduino_abierto'] = arduino_controller.arduino.is_open
+                info_adicional['arduino_nombre'] = arduino_controller.arduino.name
+                info_adicional['arduino_timeout'] = arduino_controller.arduino.timeout
+            except Exception as e:
+                info_adicional['error'] = f'No se pudo obtener información adicional: {str(e)}'
+        
+        # Verificar instalación de pyserial
+        import pkg_resources
+        pyserial_version = pkg_resources.get_distribution("pyserial").version
+        
+        return jsonify({
+            'pyserial_version': pyserial_version,
+            'puertos_disponibles': puertos,
+            'configuracion_actual': config_actual,
+            'info_adicional': info_adicional
+        })
+    except Exception as e:
+        import traceback
+        error_trace = traceback.format_exc()
+        return jsonify({
+            'status': 'error',
+            'message': str(e),
+            'traceback': error_trace
+        }), 500
+
+# Add to your arduino/routes.py
+
+@blueprint.route('/diagnostics')
+@login_required
+def diagnostics():
+    """Returns detailed diagnostic information"""
+    # Ensure controller is initialized
+    if arduino_controller is None:
+        init_arduino()
+        
+    if arduino_controller is None:
+        return jsonify({
+            'status': 'error',
+            'message': 'No se pudo inicializar el controlador de Arduino'
+        })
+    
+    # Get diagnostic information
+    diagnostics = arduino_controller.get_diagnostics()
+    
+    # Add pyserial version
+    import serial
+    diagnostics['pyserial_version'] = serial.__version__
+    
+    return jsonify(diagnostics)
